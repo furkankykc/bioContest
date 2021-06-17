@@ -2,7 +2,8 @@
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-import numpy
+import pickle
+
 import numpy as np
 from tqdm import tqdm
 
@@ -29,7 +30,7 @@ def epigenemi(fileName):
                 # print(numberOfCases, lengthOfCases, numberOfTests)
                 seq.append(list(lines[j]))
             # print(numpy.transpose(seq))
-            rawdata = list(map(lambda x: ''.join(x), numpy.transpose(seq)))
+            rawdata = list(map(lambda x: ''.join(x), np.transpose(seq)))
             coll = {v: k for k, v in enumerate(list(dict.fromkeys(rawdata).keys()))}
 
             lengthOfColl = len(coll)
@@ -69,10 +70,13 @@ def metabolite(fileName):
         iterator += 1
         # print(len(seq), len(seq[0]))
         filteredList = np.array([seq[1] + x for x in seq[0]])
-
         # filteredList = np.where(temp > 0, temp, float('inf'))
         shp = filteredList.shape
         flattedList = np.matrix.flatten(filteredList)
+        ## SAVE N LOAD
+        # np.savetxt(f'flatted_{fileName}', flattedList, delimiter=' ')
+        # flattedList = np.loadtxt(f'flatted_{fileName}', delimiter=' ')
+
         del filteredList
         enumeratedList = {k: v for k, v in enumerate(flattedList)}
         del flattedList
@@ -80,7 +84,8 @@ def metabolite(fileName):
         del enumeratedList
         keys = np.fromiter(sortedList.keys(), dtype=int)
         vals = np.fromiter(sortedList.values(), dtype=float)
-        del sortedList
+
+        # del sortedList
         # massExcludedList
         for mof in np.nditer(seq[2]):  # masses of signal
             # massExcludedList = np.abs(filteredList - mof)
@@ -107,13 +112,39 @@ def metabolite(fileName):
     f.close()  #
 
 
+def sss(fileName):
+    flattedList = np.loadtxt(f'flatted_{fileName}', delimiter=' ')
+
+    # with open('filename.pickle', 'rb') as handle:
+    #     b = pickle.load(handle)
+    enumeratedList = {k: v for k, v in enumerate(flattedList)}
+    # np.savetxt(f'enumerated_{fileName}', enumeratedList, delimiter=' ')
+    with open(f'enumerated{fileName}', 'wb') as handle:
+        pickle.dump(enumeratedList, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # del flattedList
+    # sortedList = dict(sorted(enumeratedList.items(), key=lambda item: item[1]))
+    # del enumeratedList
+    # keys = np.fromiter(sortedList.keys(), dtype=int)
+    # vals = np.fromiter(sortedList.values(), dtype=float)
+
+    # del sortedList
+    # massExcludedList
+    #     for mof in np.nditer(seq[2]):  # masses of signal
+    #         # massExcludedList = np.abs(filteredList - mof)
+    #
+    #         key = keys[np.argmax(vals >= mof)]
+    #         indexes = np.unravel_index(key, shp)
+    #         out += f"{' '.join(str(v + 1) for v in indexes)}\n"
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     import time
 
     start = time.time()
     # for i in range(1, 2):
-    metabolite('4.txt')
+    sss('5.txt')
     end = time.time()
     print((end - start))
 
