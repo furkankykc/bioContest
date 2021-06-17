@@ -47,58 +47,61 @@ def epigenemi(fileName):
 
 def metabolite(fileName):
     out = ''
-    with open(f'data2/{fileName}') as file:
-        lines = [line.rstrip() for line in file]
-        numberOfTests = int(lines[0])
-        i = 1
-        iterator = 0
-        while iterator < numberOfTests:
-            # print(i, '|', lines[i])
-            numberOfCases = 3
-            # firstRow, secondRow, thirdRow = tuple(int(x) for x in lines[i].split(' '))
-            seq = []
-            # print(lines[i])
+    fN = f'data2/{fileName}'
+    # lines = [line.rstrip() for line in file]
+    # numberOfTests = int(lines[0])
+    import linecache
+    numberOfTests = int(linecache.getline(fN, 1))
+    i = 2
+    iterator = 0
+    while iterator < numberOfTests:
+        # print(i, '|', lines[i])
+        numberOfCases = 3
+        # firstRow, secondRow, thirdRow = tuple(int(x) for x in lines[i].split(' '))
+        seq = []
+        # print(lines[i])
 
-            for j in range(i + 1, i + numberOfCases + 1):
-                # print(lines[j])
-                # seq.append(list(map(lambda x: float(x), lines[j].split(' '))))
-                seq.append(np.fromstring(lines[j], dtype=float, sep=' '))
-            i = i + numberOfCases + 1
-            iterator += 1
-            # print(len(seq), len(seq[0]))
-            filteredList = np.array([seq[1] + x for x in seq[0]])
+        for j in range(i + 1, i + numberOfCases + 1):
+            # print(lines[j])
+            # seq.append(list(map(lambda x: float(x), lines[j].split(' '))))
+            seq.append(np.fromstring(linecache.getline(fN, j), dtype=float, sep=' '))
+        i = i + numberOfCases + 1
+        iterator += 1
+        # print(len(seq), len(seq[0]))
+        filteredList = np.array([seq[1] + x for x in seq[0]])
 
-            # filteredList = np.where(temp > 0, temp, float('inf'))
-            shp = filteredList.shape
-            flattedList = np.matrix.flatten(filteredList)
-            enumeratedList = {k: v for k, v in enumerate(flattedList)}
-            del flattedList
-            sortedList = dict(sorted(enumeratedList.items(), key=lambda item: item[1]))
-            del enumeratedList
-            keys = np.fromiter(sortedList.keys(), dtype=int)
-            vals = np.fromiter(sortedList.values(), dtype=float)
-            del sortedList
-            # massExcludedList
-            for mof in tqdm(seq[2]):  # masses of signal
-                # massExcludedList = np.abs(filteredList - mof)
+        # filteredList = np.where(temp > 0, temp, float('inf'))
+        shp = filteredList.shape
+        flattedList = np.matrix.flatten(filteredList)
+        del filteredList
+        enumeratedList = {k: v for k, v in enumerate(flattedList)}
+        del flattedList
+        sortedList = dict(sorted(enumeratedList.items(), key=lambda item: item[1]))
+        del enumeratedList
+        keys = np.fromiter(sortedList.keys(), dtype=int)
+        vals = np.fromiter(sortedList.values(), dtype=float)
+        del sortedList
+        # massExcludedList
+        for mof in np.nditer(seq[2]):  # masses of signal
+            # massExcludedList = np.abs(filteredList - mof)
 
-                key = keys[np.argmax(vals >= mof)]
-                indexes = np.unravel_index(key, shp)
-                out += f"{' '.join(str(v + 1) for v in indexes)}\n"
-                # for k, v in sortedList.items():
-                #     if v >= mof:
-                #         # out += f"{k / r} {k % c}\n"
-                #         indexes = np.unravel_index(k,shp)
-                #         out += f"{' '.join(str(v + 1) for v in indexes)}\n"
-                #         # print(indexes)
-                #
-                #         break
-                # indexes = np.argwhere(massExcludedList == np.min(massExcludedList))[0] + 1
-                # indexes = np.unravel_index(massExcludedList.argmin(), massExcludedList.shape)
-                # indexes = np.unravel_index(massExcludedList.argmin(), massExcludedList.shape)
-                # out += f"{' '.join(str(v + 1) for v in indexes)}\n"
-            # print(values)
-            # print(temp - mof, mof)
+            key = keys[np.argmax(vals >= mof)]
+            indexes = np.unravel_index(key, shp)
+            out += f"{' '.join(str(v + 1) for v in indexes)}\n"
+            # for k, v in sortedList.items():
+            #     if v >= mof:
+            #         # out += f"{k / r} {k % c}\n"
+            #         indexes = np.unravel_index(k,shp)
+            #         out += f"{' '.join(str(v + 1) for v in indexes)}\n"
+            #         # print(indexes)
+            #
+            #         break
+            # indexes = np.argwhere(massExcludedList == np.min(massExcludedList))[0] + 1
+            # indexes = np.unravel_index(massExcludedList.argmin(), massExcludedList.shape)
+            # indexes = np.unravel_index(massExcludedList.argmin(), massExcludedList.shape)
+            # out += f"{' '.join(str(v + 1) for v in indexes)}\n"
+        # print(values)
+        # print(temp - mof, mof)
     f = open(f'res2/res{fileName}', 'w')
     f.write(out)  # python will convert \n to os.linesep
     f.close()  #
@@ -113,14 +116,5 @@ if __name__ == '__main__':
     metabolite('4.txt')
     end = time.time()
     print((end - start))
-# 2 366
-# 6 297
-# 1 47
-# 46 25
-# 46 25
-# 1 453
-# 1 70
-# 1 704
-# 2 46
-# 6 297
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
