@@ -75,14 +75,14 @@ def metabolite(fileName):
 
         # filteredList = np.where(temp > 0, temp, float('inf'))
         shp = filteredList.shape
-        flattedList = np.matrix.flatten(filteredList)
-        del filteredList
+        filteredList.ravel()
+        # del filteredList
 
         # with open('flattedList.pickle', 'wb') as handle:
         #     pickle.dump(flattedList, handle, protocol=pickle.HIGHEST_PROTOCOL)
         # return
-        enumeratedList = {k: v for k, v in enumerate(flattedList)}
-        del flattedList
+        enumeratedList = {k: v for k, v in enumerate(filteredList)}
+        del filteredList
         sortedList = dict(sorted(enumeratedList.items(), key=lambda item: item[1]))
         del enumeratedList
         keys = np.fromiter(sortedList.keys(), dtype=int)
@@ -128,7 +128,7 @@ def metabolite2(fileName):
         while iterator < numberOfTests:
             # print(i, '|', lines[i])
             numberOfCases = 3
-            firstRow, secondRow, thirdRow = tuple(int(x) for x in lines[i].split(' '))
+            # firstRow, secondRow, thirdRow = tuple(int(x) for x in lines[i].split(' '))
             seq = []
             # print(lines[i])
             for j in range(i + 1, i + numberOfCases + 1):
@@ -142,16 +142,26 @@ def metabolite2(fileName):
 
             filteredList = np.array([seq[1] + x for x in seq[0]], dtype=np.float64)
             # filteredList = np.where(filteredList > 0, filteredList, float('inf'))
-            filteredList[filteredList < 0] = np.inf
+            # filteredList[filteredList < 0] = np.inf
             print("Aggregation Progress Finished")
+            ind = 0
 
-            for mof in tqdm(seq[2]):  # masses of signal
-                massExcludedList = np.abs(filteredList - mof)
-                # indexes = np.argwhere(massExcludedList == np.min(massExcludedList))[0] + 1
-                indexes = np.unravel_index(massExcludedList.argmin(), massExcludedList.shape)
-                out += f"{' '.join(str(v + 1) for v in indexes)}\n"
-            # print(values)
-            # print(temp - mof, mof)
+            for mof in tqdm(np.nditer(seq[2])):  # masses of signal
+
+                minimum = float('inf')
+                for index, x in np.ndenumerate(filteredList):
+                    massExcludedList = np.abs(x - mof)
+                    if minimum > massExcludedList:
+                        minimum = massExcludedList
+                        indexes = index
+                    # indexes = np.argwhere(massExcludedList == np.min(massExcludedList))[0] + 1
+                # indexes = np.unravel_index(minimum, filteredList.shape)
+                out += f"{indexes[0] + 1}{indexes[1] + 1}\n"
+                print(ind, indexes[0] +1, indexes[1] + 1, minimum)
+
+                ind += 1
+                # print(values)
+                # print(temp - mof, mof)
 
     print("Result Checking Progress Finished")
     f = open(f'res2/res{fileName}', 'w')
